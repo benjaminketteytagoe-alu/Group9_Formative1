@@ -1,0 +1,54 @@
+class TeamMember {
+  final String id;
+  final String name;
+  final String role;
+  final String email;
+  final int colorValue; // avatar colour, e.g. 0xFF1565C0
+
+  const TeamMember({
+    required this.id,
+    required this.name,
+    required this.role,
+    this.email = '',
+    required this.colorValue,
+  });
+
+  /// "John Doe" -> "JD"
+  String get initials {
+    final parts = name.trim().split(RegExp(r'\s+'));
+    if (parts.isEmpty || parts.first.isEmpty) return '?';
+    if (parts.length == 1) return parts.first[0].toUpperCase();
+    return (parts.first[0] + parts.last[0]).toUpperCase();
+  }
+
+  TeamMember copyWith({
+    String? name,
+    String? role,
+    String? email,
+    int? colorValue,
+  }) {
+    return TeamMember(
+      id: id,
+      name: name ?? this.name,
+      role: role ?? this.role,
+      email: email ?? this.email,
+      colorValue: colorValue ?? this.colorValue,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'role': role,
+    'email': email,
+    'colorValue': colorValue,
+  };
+
+  factory TeamMember.fromJson(Map<String, dynamic> j) => TeamMember(
+    id: j['id'] as String,
+    name: j['name'] as String,
+    role: j['role'] as String? ?? '',
+    email: j['email'] as String? ?? '',
+    colorValue: j['colorValue'] as int? ?? 0xFF1565C0,
+  );
+}
