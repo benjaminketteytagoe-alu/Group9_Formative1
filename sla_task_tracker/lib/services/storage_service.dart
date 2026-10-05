@@ -11,6 +11,7 @@ class StorageService {
   static const _membersKey = 'members';
   static const _activityKey = 'activity';
   static const _currentUserKey = 'current_user_id';
+  static const _seededKey = 'seeded';
 
   // ---------- Generic helpers ----------
 
@@ -26,7 +27,7 @@ class StorageService {
           .map((e) => fromJson(e as Map<String, dynamic>))
           .toList();
     } catch (_) {
-      return []; // corrupted data must not crash the app
+      return [];
     }
   }
 
@@ -73,5 +74,17 @@ class StorageService {
   Future<void> clearCurrentUser() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_currentUserKey);
+  }
+
+  // ---------- First-launch seeding flag ----------
+
+  Future<bool> isSeeded() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_seededKey) ?? false;
+  }
+
+  Future<void> markSeeded() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_seededKey, true);
   }
 }
