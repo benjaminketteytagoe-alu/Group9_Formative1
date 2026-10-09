@@ -31,7 +31,13 @@ void main() async {
         ChangeNotifierProvider.value(value: members),
         ChangeNotifierProvider.value(value: tasks),
       ],
-      // child: const MyApp(), // Boaz's app shell
+      child: MaterialApp(
+        title: 'Group 9 SLA Task Tracker',
+        home: Scaffold(
+          appBar: AppBar(title: const Text('Group 9 SLA Task Tracker')),
+          body: const Center(child: Text('Boaz app shell should be fused here'),),
+        ),
+      ), // Boaz's app shell
     ),
   );
 }
