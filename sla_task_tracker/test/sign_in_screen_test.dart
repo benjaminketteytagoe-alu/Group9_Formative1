@@ -70,6 +70,7 @@ void main() {
 
     expect(members.currentUser?.id, SeedData.boazId);
     expect(await storage.getCurrentUserId(), SeedData.boazId);
+    expect(find.byType(NavigationBar), findsOneWidget);
     expect(find.text('Signed in as Boaz (QA Tester)'), findsOneWidget);
   });
 
