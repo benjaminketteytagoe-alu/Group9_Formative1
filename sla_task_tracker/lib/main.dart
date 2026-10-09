@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'app.dart';
 import 'providers/activity_provider.dart';
 import 'providers/member_provider.dart';
 import 'providers/task_provider.dart';
@@ -31,6 +32,7 @@ void main() async {
         ChangeNotifierProvider.value(value: members),
         ChangeNotifierProvider.value(value: tasks),
       ],
+      child: const MyApp(),
       child: MaterialApp(
         title: 'Group 9 SLA Task Tracker',
         home: Scaffold(
