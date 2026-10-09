@@ -13,12 +13,14 @@ class TaskCard extends StatelessWidget {
     required this.status,
     this.assignee,
     this.onTap,
+        this.margin = const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
   });
 
   final Task task;
   final SlaStatus status;
   final TeamMember? assignee;
   final VoidCallback? onTap;
+    final EdgeInsetsGeometry margin;
 
   static const _months = [
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -31,7 +33,7 @@ class TaskCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            margin: margin,
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: onTap,
