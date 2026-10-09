@@ -70,7 +70,7 @@ void main() {
 
     expect(members.currentUser?.id, SeedData.boazId);
     expect(await storage.getCurrentUserId(), SeedData.boazId);
-    expect(find.text('Signed in as Boaz (QA Tester)'), findsOneWidget);
+    expect(find.byType(NavigationBar), findsOneWidget);
   });
 
   testWidgets('shows an empty state when there are no members',
