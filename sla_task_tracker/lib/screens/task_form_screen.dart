@@ -486,7 +486,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                     ),
                   ),
                   subtitle: _dueDate == null
-                      ? const Text('The deadline cannot be in the past.')
+                      ? const Text('A deadline is required.')
                       : const Text('Tap to change the deadline'),
                   trailing: const Icon(Icons.chevron_right_rounded),
                   onTap: _pickDeadline,

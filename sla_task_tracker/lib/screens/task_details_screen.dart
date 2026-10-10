@@ -53,11 +53,6 @@ class TaskDetailsScreen extends StatelessWidget {
                   );
                 },
               ),
-              IconButton(
-                tooltip: 'Delete task',
-                icon: const Icon(Icons.delete_outline_rounded),
-                onPressed: () => _confirmDelete(context, taskProvider),
-              ),
             ],
           ),
           body: SafeArea(
