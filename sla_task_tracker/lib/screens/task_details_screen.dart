@@ -193,7 +193,7 @@ class TaskDetailsScreen extends StatelessWidget {
           title: const Text('Delete task?'),
           content: const Text(
             'This task will be permanently removed. '
-                'This action cannot be undone.',
+                'This action cannot be undone. Are you sure you want to proceed?',
           ),
           actions: [
             TextButton(
