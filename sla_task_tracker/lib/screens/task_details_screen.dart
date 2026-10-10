@@ -177,6 +177,45 @@ class TaskDetailsScreen extends StatelessWidget {
     );
   }
 
+  Future<void> _confirmDelete(
+      BuildContext context,
+      TaskProvider taskProvider,
+      ) async {
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Delete task?'),
+          content: const Text(
+            'This task will be permanently removed. '
+                'This action cannot be undone. Are you sure you want to proceed?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldDelete != true || !context.mounted) {
+      return;
+    }
+
+    await taskProvider.deleteTask(taskId);
+
+    if (!context.mounted) {
+      return;
+    }
+
+    Navigator.of(context).pop();
+  }
 
   String _formatDeadline(DateTime deadline) {
     final local = deadline.toLocal();
