@@ -6,7 +6,6 @@ import '../providers/member_provider.dart';
 import '../providers/task_provider.dart';
 import '../services/sla_service.dart';
 import '../widgets/status_chip.dart';
-import '../widgets/task_status_selector.dart';
 import 'task_form_screen.dart';
 
 class TaskDetailsScreen extends StatelessWidget {
@@ -52,6 +51,11 @@ class TaskDetailsScreen extends StatelessWidget {
                     ),
                   );
                 },
+              ),
+              IconButton(
+                tooltip: 'Delete task',
+                icon: const Icon(Icons.delete_outline_rounded),
+                onPressed: () => _confirmDelete(context, taskProvider),
               ),
             ],
           ),
@@ -100,55 +104,59 @@ class TaskDetailsScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 24),
-
                   _SectionTitle(
                     icon: Icons.flag_outlined,
                     title: 'Status',
                   ),
                   const SizedBox(height: 10),
-
-                  TaskStatusSelector(
-                    value: task.status,
+                  DropdownButtonFormField<TaskStatus>(
+                    initialValue: task.status,
+                    decoration: const InputDecoration(
+                      labelText: 'Change status',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: TaskStatus.values
+                        .map(
+                          (status) => DropdownMenuItem<TaskStatus>(
+                        value: status,
+                        child: Text(status.label),
+                      ),
+                    )
+                        .toList(),
                     onChanged: (status) {
-                      taskProvider.setStatus(task.id, status);
+                      if (status != null) {
+                        taskProvider.setStatus(task.id, status);
+                      }
                     },
                   ),
-
                   const SizedBox(height: 24),
-
                   _SectionTitle(
                     icon: Icons.info_outline_rounded,
                     title: 'Task Information',
                   ),
                   const SizedBox(height: 12),
-
                   if (task.description.trim().isNotEmpty)
                     _InfoCard(
                       icon: Icons.description_outlined,
                       title: 'Description',
                       value: task.description,
                     ),
-
                   _InfoCard(
                     icon: Icons.person_outline_rounded,
                     title: 'Assignee',
                     value: assignee?.name ?? 'Unassigned',
                   ),
-
                   _InfoCard(
                     icon: Icons.category_outlined,
                     title: 'Category',
                     value: task.category,
                   ),
-
                   _InfoCard(
                     icon: Icons.priority_high_rounded,
                     title: 'Priority',
                     value: task.priority.label,
                   ),
-
                   _InfoCard(
                     icon: Icons.event_outlined,
                     title: 'Deadline',
@@ -161,7 +169,6 @@ class TaskDetailsScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-
                   if (task.notes.trim().isNotEmpty)
                     _InfoCard(
                       icon: Icons.sticky_note_2_outlined,

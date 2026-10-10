@@ -8,7 +8,7 @@ import '../providers/task_provider.dart';
 import '../providers/theme_mode_provider.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/task_card.dart';
-import 'create_edit_task_screen.dart';
+import 'task_form_screen.dart';
 import 'task_details_screen.dart';
 
 class TaskListScreen extends StatefulWidget {
@@ -209,7 +209,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const CreateEditTaskScreen(),
+                                builder: (_) => const TaskFormScreen(),
                               ),
                             );
                           },
@@ -248,7 +248,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const CreateEditTaskScreen()),
+            MaterialPageRoute(builder: (_) => const TaskFormScreen()),
           );
         },
         icon: const Icon(Icons.add),
