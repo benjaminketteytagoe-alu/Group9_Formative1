@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../screens/member_profile_screen.dart';
 import '../screens/create_edit_task_screen.dart';
 import '../screens/task_details_screen.dart';
 
@@ -12,29 +13,23 @@ import '../screens/task_details_screen.dart';
 class AppRoutes {
   static const taskDetails = '/task';
   static const taskForm = '/task/edit';
+  static const memberProfile = '/member';
+  static const memberForm = '/member/edit';
 
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
-      case taskDetails:
+      case memberProfile:
         final id = settings.arguments as String;
         return MaterialPageRoute(
           settings: settings,
-          builder: (_) => TaskDetailsScreen(taskId: id),
+          builder: (_) => MemberProfileScreen(memberId: id),
         );
-      case taskForm:
-        final arg = settings.arguments;
-        if (arg is String) {
-          // Edit mode — id passed; screen will look it up.
-          // For now use direct navigation with the task object.
-          return MaterialPageRoute(
-            settings: settings,
-            builder: (_) => const CreateEditTaskScreen(),
-          );
-        }
-        return MaterialPageRoute(
-          settings: settings,
-          builder: (_) => const CreateEditTaskScreen(),
-        );
+      // case taskDetails:
+      //   final id = settings.arguments as String;
+      //   return MaterialPageRoute(
+      //     settings: settings,
+      //     builder: (_) => TaskDetailsScreen(taskId: id),
+      //   );
     }
     return null;
   }

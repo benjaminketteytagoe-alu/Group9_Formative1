@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'dashboard_screen.dart';
 import 'task_list_screen.dart';
+import 'team_screen.dart';
 import 'team_members_screen.dart';
 
 /// Main screen after sign-in: bottom navigation with three tabs.
@@ -25,6 +26,7 @@ class _HomeShellState extends State<HomeShell> {
         children: const [
           DashboardScreen(),
           TaskListScreen(),
+          TeamScreen(),
           TeamMembersScreen(),
         ],
       ),
