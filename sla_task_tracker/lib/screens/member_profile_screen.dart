@@ -73,6 +73,7 @@ class MemberProfileScreen extends StatelessWidget {
           ),
         ],
       ),
+      appBar: AppBar(title: Text(member.name)),
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 16),
         children: [
