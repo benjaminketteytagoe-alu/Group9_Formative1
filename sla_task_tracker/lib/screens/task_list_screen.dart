@@ -5,10 +5,39 @@ import '../models/enums.dart';
 import '../models/task.dart';
 import '../providers/member_provider.dart';
 import '../providers/task_provider.dart';
+import '../providers/theme_mode_provider.dart';
+import '../widgets/empty_state.dart';
 import '../widgets/task_card.dart';
+import 'create_edit_task_screen.dart';
+import 'task_details_screen.dart';
 
 class TaskListScreen extends StatefulWidget {
   const TaskListScreen({super.key});
+
+  static void _signOut(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Sign out'),
+          content: const Text('Are you sure you want to sign out?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () {
+                dialogContext.read<MemberProvider>().signOut();
+                Navigator.pop(dialogContext);
+              },
+              child: const Text('Sign out'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   State<TaskListScreen> createState() => _TaskListScreenState();
@@ -54,6 +83,11 @@ class _TaskListScreenState extends State<TaskListScreen> {
         title: const Text('Tasks'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.brightness_auto_outlined),
+            tooltip: 'Toggle theme',
+            onPressed: () => context.read<ThemeModeProvider>().toggle(),
+          ),
+          IconButton(
             tooltip: _soonestFirst
                 ? 'Soonest deadline first'
                 : 'Latest deadline first',
@@ -61,6 +95,11 @@ class _TaskListScreenState extends State<TaskListScreen> {
               _soonestFirst ? Icons.arrow_upward : Icons.arrow_downward,
             ),
             onPressed: () => setState(() => _soonestFirst = !_soonestFirst),
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout_outlined),
+            tooltip: 'Sign out',
+            onPressed: () => TaskListScreen._signOut(context),
           ),
         ],
       ),
@@ -160,23 +199,61 @@ class _TaskListScreenState extends State<TaskListScreen> {
                   ),
                 ),
                 Expanded(
-                  child: results.isEmpty
-                      ? const Center(child: Text('No tasks match your filters'))
-                      : ListView.builder(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          itemCount: results.length,
-                          itemBuilder: (context, index) {
-                            final task = results[index];
-                            return TaskCard(
-                              task: task,
-                              status: taskProvider.slaOf(task),
-                              assignee: memberProvider.byId(task.assigneeId),
+                  child: taskProvider.tasks.isEmpty
+                      ? EmptyState(
+                          icon: Icons.checklist_outlined,
+                          title: 'No tasks yet',
+                          message: 'Create your first task to get started.',
+                          actionLabel: 'Create task',
+                          onAction: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const CreateEditTaskScreen(),
+                              ),
                             );
                           },
-                        ),
+                        )
+                      : results.isEmpty
+                          ? const Center(
+                              child: Text('No tasks match your filters'),
+                            )
+                          : ListView.builder(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 8),
+                              itemCount: results.length,
+                              itemBuilder: (context, index) {
+                                final task = results[index];
+                                return TaskCard(
+                                  task: task,
+                                  status: taskProvider.slaOf(task),
+                                  assignee: memberProvider.byId(task.assigneeId),
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => TaskDetailsScreen(
+                                          taskId: task.id,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                            ),
                 ),
               ],
             ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const CreateEditTaskScreen()),
+          );
+        },
+        icon: const Icon(Icons.add),
+        label: const Text('New Task'),
+      ),
     );
   }
 }

@@ -3,7 +3,9 @@ class TeamMember {
   final String name;
   final String role;
   final String email;
-  final int colorValue; // avatar colour, e.g. 0xFF1565C0
+  final int colorValue;
+  final String username;
+  final String password;
 
   const TeamMember({
     required this.id,
@@ -11,6 +13,8 @@ class TeamMember {
     required this.role,
     this.email = '',
     required this.colorValue,
+    this.username = '',
+    this.password = '',
   });
 
   /// "John Doe" -> "JD"
@@ -26,6 +30,8 @@ class TeamMember {
     String? role,
     String? email,
     int? colorValue,
+    String? username,
+    String? password,
   }) {
     return TeamMember(
       id: id,
@@ -33,6 +39,8 @@ class TeamMember {
       role: role ?? this.role,
       email: email ?? this.email,
       colorValue: colorValue ?? this.colorValue,
+      username: username ?? this.username,
+      password: password ?? this.password,
     );
   }
 
@@ -42,6 +50,8 @@ class TeamMember {
     'role': role,
     'email': email,
     'colorValue': colorValue,
+    'username': username,
+    'password': password,
   };
 
   factory TeamMember.fromJson(Map<String, dynamic> j) => TeamMember(
@@ -50,5 +60,7 @@ class TeamMember {
     role: j['role'] as String? ?? '',
     email: j['email'] as String? ?? '',
     colorValue: j['colorValue'] as int? ?? 0xFF1565C0,
+    username: j['username'] as String? ?? '',
+    password: j['password'] as String? ?? '',
   );
 }
