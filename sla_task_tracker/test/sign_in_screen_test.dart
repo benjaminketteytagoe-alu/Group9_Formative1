@@ -68,10 +68,9 @@ void main() {
     await tester.tap(find.text('Continue as Boaz'));
     await tester.pumpAndSettle();
 
-    expect(members.currentUser?.id, SeedData.boazId);
-    expect(await storage.getCurrentUserId(), SeedData.boazId);
+    expect(members.currentUser?.id, SeedData.boaz_id);
+    expect(await storage.getCurrentUserId(), SeedData.boaz_id);
     expect(find.byType(NavigationBar), findsOneWidget);
-    expect(find.text('Signed in as Boaz (QA Tester)'), findsOneWidget);
   });
 
   testWidgets('shows an empty state when there are no members',

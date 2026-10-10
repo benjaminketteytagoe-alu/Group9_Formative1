@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/enums.dart';
 import '../providers/member_provider.dart';
 import '../providers/task_provider.dart';
+import '../utils/app_routes.dart';
 import '../utils/sla_colors.dart';
 import '../utils/workload.dart';
 import '../widgets/empty_state.dart';
@@ -58,7 +59,20 @@ class MemberProfileScreen extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(member.name)),
+      appBar: AppBar(
+        title: Text(member.name),
+        actions: [
+          IconButton(
+            tooltip: 'Edit member',
+            icon: const Icon(Icons.edit_outlined),
+            onPressed: () => Navigator.pushNamed(
+              context,
+              AppRoutes.memberForm,
+              arguments: member.id,
+            ),
+          ),
+        ],
+      ),
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 16),
         children: [

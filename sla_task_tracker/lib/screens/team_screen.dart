@@ -55,6 +55,11 @@ class TeamScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Team')),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => Navigator.pushNamed(context, AppRoutes.memberForm),
+        icon: const Icon(Icons.person_add_alt_1),
+        label: const Text('Add Member'),
+      ),
       body: taskProvider.isLoading
           ? const LoadingView()
           : members.isEmpty
@@ -64,7 +69,8 @@ class TeamScreen extends StatelessWidget {
                   message: 'Members you add will appear here.',
                 )
               : ListView(
-                  padding: const EdgeInsets.all(16),
+                  // Extra bottom space so the button never hides a card.
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
                   children: [
                     if (me != null) ...[
                       _MyProfileCard(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../screens/member_form_screen.dart';
 import '../screens/member_profile_screen.dart';
 
 /// Route names for screens opened on top of the bottom navigation.
@@ -23,6 +24,12 @@ class AppRoutes {
         return MaterialPageRoute(
           settings: settings,
           builder: (_) => MemberProfileScreen(memberId: id),
+        );
+      case memberForm:
+        final id = settings.arguments as String?; // null = add
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => MemberFormScreen(memberId: id),
         );
       // case taskDetails:
       //   final id = settings.arguments as String;

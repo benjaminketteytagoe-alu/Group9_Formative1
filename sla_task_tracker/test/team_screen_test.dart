@@ -44,7 +44,7 @@ void main() {
     members = MemberProvider(storage);
     tasks = TaskProvider(storage, activity);
     await Future.wait([activity.load(), members.load(), tasks.load()]);
-    await members.signIn(SeedData.boazId);
+    await members.signIn(SeedData.boaz_id);
   });
 
   group('Workload', () {
@@ -90,7 +90,7 @@ void main() {
 
     expect(find.text('Signed in as'), findsOneWidget);
     expect(find.text('Boaz (you)'), findsOneWidget);
-    for (final m in SeedData.members().where((m) => m.id != SeedData.boazId)) {
+    for (final m in SeedData.members().where((m) => m.id != SeedData.boaz_id)) {
       expect(find.text(m.name), findsOneWidget);
     }
   });

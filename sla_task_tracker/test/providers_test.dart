@@ -110,12 +110,12 @@ void main() {
       final members = MemberProvider(storage);
       await members.load();
 
-      await members.signIn(SeedData.benjaminId);
+      await members.signIn(SeedData.benjamin_id);
       expect(members.currentUser?.name, 'Benjamin');
 
       final restarted = MemberProvider(StorageService());
       await restarted.load();
-      expect(restarted.currentUser?.id, SeedData.benjaminId);
+      expect(restarted.currentUser?.id, SeedData.benjamin_id);
     });
 
     test('signOut clears the current user', () async {
@@ -123,7 +123,7 @@ void main() {
       final members = MemberProvider(storage);
       await members.load();
 
-      await members.signIn(SeedData.boazId);
+      await members.signIn(SeedData.boaz_id);
       await members.signOut();
       expect(members.isSignedIn, isFalse);
     });
