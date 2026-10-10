@@ -13,13 +13,22 @@ class StorageService {
   static const _currentUserKey = 'current_user_id';
   static const _seededKey = 'seeded';
 
+  SharedPreferences? _prefsCache;
+
+  /// Returns the SharedPreferences instance, using a cache to avoid
+  /// repeated async initialisation calls.
+  Future<SharedPreferences> _getPrefs() async {
+    _prefsCache ??= await SharedPreferences.getInstance();
+    return _prefsCache!;
+  }
+
   // ---------- Generic helpers ----------
 
   Future<List<T>> _loadList<T>(
       String key,
       T Function(Map<String, dynamic>) fromJson,
       ) async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _getPrefs();
     final raw = prefs.getString(key);
     if (raw == null) return [];
     try {
@@ -32,7 +41,7 @@ class StorageService {
   }
 
   Future<void> _saveList(String key, List<Map<String, dynamic>> items) async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _getPrefs();
     await prefs.setString(key, jsonEncode(items));
   }
 
@@ -62,29 +71,29 @@ class StorageService {
   // ---------- Signed-in user ----------
 
   Future<String?> getCurrentUserId() async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _getPrefs();
     return prefs.getString(_currentUserKey);
   }
 
   Future<void> setCurrentUserId(String id) async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _getPrefs();
     await prefs.setString(_currentUserKey, id);
   }
 
   Future<void> clearCurrentUser() async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _getPrefs();
     await prefs.remove(_currentUserKey);
   }
 
   // ---------- First-launch seeding flag ----------
 
   Future<bool> isSeeded() async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _getPrefs();
     return prefs.getBool(_seededKey) ?? false;
   }
 
   Future<void> markSeeded() async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _getPrefs();
     await prefs.setBool(_seededKey, true);
   }
 }

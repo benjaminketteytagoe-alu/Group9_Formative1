@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../models/enums.dart';
-import '../models/team_member.dart';
 import '../providers/member_provider.dart';
 import '../providers/task_provider.dart';
+import '../providers/theme_mode_provider.dart';
 
-/// Mock sign-in: the user picks their profile from the team list.
-/// The choice is saved by [MemberProvider.signIn], so the app remembers
-/// who is signed in after it is closed and reopened.
+/// Sign-in screen with username and password fields.
+/// Validates credentials against stored team members and navigates
+/// to the home shell on success.
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
 
@@ -17,16 +16,50 @@ class SignInScreen extends StatefulWidget {
 }
 
 class _SignInScreenState extends State<SignInScreen> {
-  String? _selectedId;
-  bool _signingIn = false;
+  final _form = GlobalKey<FormState>();
+  final _usernameCtrl = TextEditingController();
+  final _passwordCtrl = TextEditingController();
 
-  Future<void> _continue(TeamMember member) async {
-    setState(() => _signingIn = true);
-    await context.read<MemberProvider>().signIn(member.id);
+  bool _obscurePassword = true;
+  bool _signingIn = false;
+  String? _errorMessage;
+  bool _showDemoCredentials = false;
+
+  @override
+  void dispose() {
+    _usernameCtrl.dispose();
+    _passwordCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _signIn() async {
+    if (!_form.currentState!.validate()) return;
+
+    setState(() {
+      _signingIn = true;
+      _errorMessage = null;
+    });
+
+    final provider = context.read<MemberProvider>();
+    final error = await provider.signInWithCredentials(
+      _usernameCtrl.text.trim(),
+      _passwordCtrl.text,
+    );
+
     if (!mounted) return;
-    setState(() => _signingIn = false);
+
+    if (error != null) {
+      setState(() {
+        _signingIn = false;
+        _errorMessage = error;
+      });
+      return;
+    }
+
+    // Success — show welcome message
+    final user = provider.currentUser!;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Welcome back, ${member.name}!')),
+      SnackBar(content: Text('Welcome back, ${user.name}!')),
     );
   }
 
@@ -34,14 +67,13 @@ class _SignInScreenState extends State<SignInScreen> {
   Widget build(BuildContext context) {
     final members = context.watch<MemberProvider>().members;
     final tasks = context.watch<TaskProvider>();
-    final selected = context.read<MemberProvider>().byId(_selectedId);
 
     return Scaffold(
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const _Header(),
+            _Header(),
             Expanded(
               child: members.isEmpty
                   ? const _EmptyTeam()
@@ -53,38 +85,178 @@ class _SignInScreenState extends State<SignInScreen> {
                         final m = members[i];
                         final open = tasks
                             .tasksForMember(m.id)
-                            .where((t) => t.status != TaskStatus.done)
+                            .where((t) => t.status.name != 'done')
                             .length;
                         return _MemberCard(
                           member: m,
                           openTasks: open,
-                          selected: m.id == _selectedId,
-                          onTap: () => setState(() => _selectedId = m.id),
                         );
                       },
                     ),
             ),
             Padding(
               padding: const EdgeInsets.all(16),
-              child: FilledButton.icon(
-                style: FilledButton.styleFrom(
-                  minimumSize: const Size.fromHeight(52),
-                ),
-                onPressed: selected == null || _signingIn
-                    ? null
-                    : () => _continue(selected),
-                icon: _signingIn
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.login),
-                label: Text(
-                  selected == null
-                      ? 'Select your profile'
-                      : 'Continue as ${selected.name}',
-                ),
+              child: Column(
+                children: [
+                  // Error message
+                  if (_errorMessage != null)
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.red.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.error_outline,
+                            color: Colors.red,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _errorMessage!,
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.close,
+                              size: 20,
+                              color: Colors.red,
+                            ),
+                            onPressed: () =>
+                                setState(() => _errorMessage = null),
+                          ),
+                        ],
+                      ),
+                    ),
+                  // Sign-in form
+                  Form(
+                    key: _form,
+                    child: Column(
+                      children: [
+                        TextFormField(
+                          controller: _usernameCtrl,
+                          decoration: const InputDecoration(
+                            labelText: 'Username',
+                            prefixIcon: Icon(Icons.person_outline),
+                          ),
+                          keyboardType: TextInputType.text,
+                          autocorrect: false,
+                          enableSuggestions: false,
+                          validator: (v) {
+                            if (v == null || v.trim().isEmpty) {
+                              return 'Enter your username.';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _passwordCtrl,
+                          decoration: InputDecoration(
+                            labelText: 'Password',
+                            prefixIcon: const Icon(Icons.lock_outline),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility_outlined
+                                    : Icons.visibility_off_outlined,
+                              ),
+                              onPressed: () {
+                                setState(
+                                  () => _obscurePassword = !_obscurePassword,
+                                );
+                              },
+                            ),
+                          ),
+                          obscureText: _obscurePassword,
+                          validator: (v) {
+                            if (v == null || v.isEmpty) {
+                              return 'Enter your password.';
+                            }
+                            if (v.length < 4) {
+                              return 'Password must be at least 4 characters.';
+                            }
+                            if (!RegExp(r'[A-Za-z]').hasMatch(v)) {
+                              return 'Password must contain at least one letter.';
+                            }
+                            if (!RegExp(r'\d').hasMatch(v)) {
+                              return 'Password must contain at least one number.';
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  FilledButton.icon(
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size.fromHeight(52),
+                    ),
+                    onPressed: _signingIn ? null : _signIn,
+                    icon: _signingIn
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.login),
+                    label: const Text('Sign in'),
+                  ),
+                  const SizedBox(height: 12),
+                  TextButton.icon(
+                    onPressed: () {
+                      setState(
+                        () => _showDemoCredentials = !_showDemoCredentials,
+                      );
+                    },
+                    icon: Icon(
+                      _showDemoCredentials
+                          ? Icons.expand_less
+                          : Icons.expand_more,
+                    ),
+                    label: Text(
+                      _showDemoCredentials
+                          ? 'Hide demo credentials'
+                          : 'Show demo credentials',
+                    ),
+                  ),
+                  if (_showDemoCredentials)
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color:
+                            Theme.of(context).colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Demo Accounts',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 8),
+                          for (final m in members)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 4),
+                              child: Text(
+                                '${m.name}: ${m.username} / ${m.password}',
+                                style: const TextStyle(fontSize: 13),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                ],
               ),
             ),
           ],
@@ -102,32 +274,74 @@ class _Header extends StatelessWidget {
     final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
-      child: Column(
+      child: Stack(
         children: [
-          CircleAvatar(
-            radius: 36,
-            backgroundColor: theme.colorScheme.primaryContainer,
-            child: Icon(
-              Icons.task_alt,
-              size: 40,
-              color: theme.colorScheme.onPrimaryContainer,
-            ),
+          Column(
+            children: [
+              CircleAvatar(
+                radius: 36,
+                backgroundColor: theme.colorScheme.primaryContainer,
+                child: Icon(
+                  Icons.task_alt,
+                  size: 40,
+                  color: theme.colorScheme.onPrimaryContainer,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'SLA Task Tracker',
+                style: theme.textTheme.headlineSmall
+                    ?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Sign in to manage your project tasks.',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyMedium
+                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
-          Text(
-            'SLA Task Tracker',
-            style: theme.textTheme.headlineSmall
-                ?.copyWith(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            "Who's working today? Pick your profile to sign in.",
-            textAlign: TextAlign.center,
-            style: theme.textTheme.bodyMedium
-                ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+          // Theme toggle in the top-right corner
+          Positioned(
+            top: 0,
+            right: 0,
+            child: _ThemeToggle(),
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Small widget that cycles the theme: system → dark → light.
+class _ThemeToggle extends StatelessWidget {
+  const _ThemeToggle();
+
+  @override
+  Widget build(BuildContext context) {
+    final mode = context.watch<ThemeModeProvider>().mode;
+    IconData icon;
+    String tooltip;
+    switch (mode) {
+      case ThemeMode.dark:
+        icon = Icons.dark_mode_outlined;
+        tooltip = 'Switch to light mode';
+        break;
+      case ThemeMode.light:
+        icon = Icons.light_mode_outlined;
+        tooltip = 'Switch to system mode';
+        break;
+      case ThemeMode.system:
+      default:
+        icon = Icons.brightness_auto_outlined;
+        tooltip = 'Switch to dark mode';
+        break;
+    }
+    return IconButton(
+      icon: Icon(icon),
+      tooltip: tooltip,
+      onPressed: () => context.read<ThemeModeProvider>().toggle(),
     );
   }
 }
@@ -136,14 +350,10 @@ class _MemberCard extends StatelessWidget {
   const _MemberCard({
     required this.member,
     required this.openTasks,
-    required this.selected,
-    required this.onTap,
   });
 
-  final TeamMember member;
+  final dynamic member;
   final int openTasks;
-  final bool selected;
-  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -152,16 +362,7 @@ class _MemberCard extends StatelessWidget {
 
     return Card(
       margin: EdgeInsets.zero,
-      elevation: selected ? 2 : 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: selected ? color : theme.colorScheme.outlineVariant,
-          width: selected ? 2 : 1,
-        ),
-      ),
       child: ListTile(
-        onTap: onTap,
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         leading: CircleAvatar(
@@ -176,9 +377,7 @@ class _MemberCard extends StatelessWidget {
         subtitle: Text(
           '${member.role} · $openTasks open task${openTasks == 1 ? '' : 's'}',
         ),
-        trailing: selected
-            ? Icon(Icons.check_circle, color: color)
-            : const Icon(Icons.chevron_right),
+        trailing: Icon(Icons.chevron_right, color: theme.colorScheme.outline),
       ),
     );
   }
