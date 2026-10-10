@@ -11,6 +11,12 @@ class SeedData {
   static const kellen_id = 'm_kellen';
   static const boaz_id = 'm_boaz';
 
+  // Public getters for tests
+  static String get benjaminId => benjamin_id;
+  static String get michaelId => michael_id;
+  static String get kellenId => kellen_id;
+  static String get boazId => boaz_id;
+
   // ---------- Team members ----------
 
   static List<TeamMember> members() => const [
@@ -20,6 +26,8 @@ class SeedData {
       role: 'Project Lead',
       email: 'benjamin@example.com',
       colorValue: 0xFF1565C0, // blue
+      username: 'benjamin',
+      password: 'ben1234',
     ),
     TeamMember(
       id: michael_id,
@@ -27,6 +35,8 @@ class SeedData {
       role: 'Mobile Developer',
       email: 'michael@example.com',
       colorValue: 0xFF7E57C2, // purple
+      username: 'michael',
+      password: 'mike1234',
     ),
     TeamMember(
       id: kellen_id,
@@ -34,6 +44,8 @@ class SeedData {
       role: 'UI/UX Designer',
       email: 'kellen@example.com',
       colorValue: 0xFF2E7D32, // green
+      username: 'kellen',
+      password: 'kel1234',
     ),
     TeamMember(
       id: boaz_id,
@@ -41,6 +53,8 @@ class SeedData {
       role: 'QA Tester',
       email: 'boaz@example.com',
       colorValue: 0xFFEF6C00, // orange
+      username: 'boaz',
+      password: 'boaz1234',
     ),
   ];
 
@@ -204,9 +218,46 @@ class SeedData {
 
   /// Seeds demo data on the very first launch only. A flag is stored, so
   /// deleting every task later does not bring the demo data back.
+  ///
+  /// If the app was previously seeded before username/password fields existed,
+  /// this also migrates existing members by filling in default credentials so
+  /// that sign-in still works.
   static Future<void> seedIfFirstLaunch(StorageService storage) async {
-    if (await storage.isSeeded()) return;
-    await reset(storage);
+    if (!await storage.isSeeded()) {
+      await reset(storage);
+      return;
+    }
+
+    // Already seeded — but check if any member is missing credentials
+    // (e.g., seeded before username/password fields were added).
+    final existing = await storage.loadMembers();
+    final seedMembers = members();
+    final needsMigration = existing.any(
+      (m) => m.username.isEmpty || m.password.isEmpty,
+    );
+
+    if (needsMigration) {
+      // For each existing member, if it matches a seed member by id,
+      // fill in the missing username/password; otherwise add default ones.
+      final migrated = existing.map((m) {
+        if (m.username.isNotEmpty && m.password.isNotEmpty) return m;
+        final seed = seedMembers.where((s) => s.id == m.id).firstOrNull;
+        if (seed != null) {
+          return m.copyWith(
+            username: m.username.isEmpty ? seed.username : m.username,
+            password: m.password.isEmpty ? seed.password : m.password,
+          );
+        }
+        // Unknown member (user-added) — give a default based on name
+        return m.copyWith(
+          username: m.username.isEmpty
+              ? m.name.toLowerCase().replaceAll(RegExp(r'\s+'), '')
+              : m.username,
+          password: m.password.isEmpty ? 'pass1234' : m.password,
+        );
+      }).toList();
+      await storage.saveMembers(migrated);
+    }
   }
 
   /// Handy right before recording the demo.
