@@ -4,12 +4,39 @@ import 'package:provider/provider.dart';
 import '../models/enums.dart';
 import '../providers/member_provider.dart';
 import '../providers/task_provider.dart';
+import '../providers/theme_mode_provider.dart';
 import '../utils/sla_colors.dart';
 import '../widgets/summary_tile.dart';
 import '../widgets/task_card.dart';
+import 'task_details_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
+
+  static void _signOut(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Sign out'),
+          content: const Text('Are you sure you want to sign out?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () {
+                dialogContext.read<MemberProvider>().signOut();
+                Navigator.pop(dialogContext);
+              },
+              child: const Text('Sign out'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   IconData _iconFor(SlaStatus s) {
     switch (s) {
@@ -31,7 +58,21 @@ class DashboardScreen extends StatelessWidget {
     final counts = taskProvider.slaCounts();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Dashboard')),
+      appBar: AppBar(
+        title: const Text('Dashboard'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.brightness_auto_outlined),
+            tooltip: 'Toggle theme',
+            onPressed: () => context.read<ThemeModeProvider>().toggle(),
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout_outlined),
+            tooltip: 'Sign out',
+            onPressed: () => _signOut(context),
+          ),
+        ],
+      ),
       body: taskProvider.isLoading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
@@ -95,10 +136,19 @@ class DashboardScreen extends StatelessWidget {
                   TaskCard(
                     task: task,
                     status: taskProvider.slaOf(task),
-                                        margin: const EdgeInsets.symmetric(vertical: 6),
+                    margin: const EdgeInsets.symmetric(vertical: 6),
                     assignee: context
                         .watch<MemberProvider>()
                         .byId(task.assigneeId),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              TaskDetailsScreen(taskId: task.id),
+                        ),
+                      );
+                    },
                   ),
               ],
             ),
