@@ -3,8 +3,8 @@ import '../models/task.dart';
 
 class SlaService {
   // Hours before the deadline when a task becomes "At Risk".
-  static const int atRiskHours = 48; // normal tasks
-  static const int atRiskHoursHighPriority = 72; // high priority gets an earlier warning
+  static const int at_risk_hours = 48; // normal tasks
+  static const int at_risk_hours_high_priority = 72; // high priority gets an earlier warning
 
   /// Due dates come from a date picker (midnight), so the real deadline
   /// is treated as the END of that day (23:59:59).
@@ -21,7 +21,7 @@ class SlaService {
     if (current.isAfter(deadline)) return SlaStatus.overdue;
 
     final window =
-    t.priority == TaskPriority.high ? atRiskHoursHighPriority : atRiskHours;
+    t.priority == TaskPriority.high ? at_risk_hours_high_priority : at_risk_hours;
     if (deadline.difference(current).inHours <= window) {
       return SlaStatus.atRisk;
     }

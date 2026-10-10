@@ -37,6 +37,41 @@ class MemberProvider extends ChangeNotifier {
 
   // ----- Sign in / out (mock authentication) -----
 
+  /// Validate a username/password pair and sign in the matching member.
+  /// Returns null on success, or an error message string on failure.
+  Future<String?> signInWithCredentials(
+    String username,
+    String password,
+  ) async {
+    // Basic format validation
+    if (username.trim().isEmpty) return 'Enter your username.';
+    if (password.isEmpty) return 'Enter your password.';
+
+    // Find member by username (case-insensitive)
+    final member = _members.firstWhere(
+      (m) => m.username.toLowerCase() == username.trim().toLowerCase(),
+      orElse: () => const TeamMember(
+        id: '',
+        name: '',
+        role: '',
+        colorValue: 0,
+        username: '',
+        password: '',
+      ),
+    );
+
+    if (member.id.isEmpty) {
+      return 'User not found. Please check your username.';
+    }
+    if (member.password != password) {
+      return 'Incorrect password. Please try again.';
+    }
+
+    await signIn(member.id);
+    return null; // No error — credentials are valid
+  }
+
+  /// Internal sign-in by member id (used after adding a member, etc.).
   Future<void> signIn(String memberId) async {
     if (byId(memberId) == null) return;
     _currentUserId = memberId;
