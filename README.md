@@ -278,7 +278,7 @@ Place these in a `docs/` folder at the repository root and update the links if y
 | Document | Link |
 |---|--|
 | Project and technical report (PDF) | `docs/Group9_SLA_Task_Tracker_Report.pdf` |
-| Demo video (10–15 min) | _add link_ |
+| Demo video (10–15 min) | `https://youtu.be/_XjDfxqnpmE` |
 | Group contribution tracker | `https://docs.google.com/spreadsheets/d/1tQ6Uu2FO4umlHtulQd6mWa5kWDHd7Xzngq-mSRsshBg/edit?usp=sharing` |
 | AI usage declaration | Included in the report (section 7) |
 
